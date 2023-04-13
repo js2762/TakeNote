@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-//import 'package:hive/hive.dart';
 import './models/note.dart';
 import './screens/noteKeeperScreen.dart';
 import './screens/editNoteScreen.dart';
