@@ -7,11 +7,6 @@ import './screens/noteKeeperScreen.dart';
 import './screens/editNoteScreen.dart';
 
 void main() async {
-  await Hive.initFlutter();
-  Hive.registerAdapter(NotesAdapter());
-
-  await Hive.openBox<Notes>('myBox'); // to open the box
-
   runApp(const MyApp());
 }
 

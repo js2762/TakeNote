@@ -1,21 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import '../helpers/sql_helper.dart';
-//import '../helpers/hive_helper.dart';
-import '../helpers/hive_new_helper.dart';
+import 'package:floor/floor.dart';
+//import 'package:notes/screens/noteKeeperScreen.dart';
+//import '../dao/noteDAO.dart';
+import '../helpers/app_database.dart';
 
-part 'note.g.dart';
-
-@HiveType(typeId: 1)
-class Notes extends HiveObject {
-  @HiveField(0)
-  final String? id;
-  @HiveField(1)
+@Entity(tableName: 'notes')
+class Notes {
+  @PrimaryKey(autoGenerate: false)
+  String? id;
   String? title;
-  @HiveField(2)
   String? description;
   //final DateTime? date;
-  Notes({this.id, this.title, this.description});
+  Notes({required this.id, this.title, this.description});
 }
 
 class NoteKeeper with ChangeNotifier {
@@ -31,8 +28,7 @@ class NoteKeeper with ChangeNotifier {
     return [..._searchedData];
   }
 
-  //final ob = HiveBox();
-  final ob2 = HiveNewBox();
+  final ob = databaseMethods();
 
   void addProduct(String title, String description) {
     final newNote = Notes(
@@ -41,19 +37,12 @@ class NoteKeeper with ChangeNotifier {
       description: description,
     );
     _items.add(newNote);
+
     //print(_items);
     notifyListeners();
-    /* SQLHelper.insert('keep_note', {
-      'id': newNote.id.toString(),
-      'title': newNote.title.toString(),
-      'description': newNote.description.toString()
-    }); */
+    ob.addNote(newNote.id.toString(), title, description);
 
-    ob2.writeData(newNote.id.toString(), newNote);
-
-    /* Map<dynamic, dynamic> getDataHive =
-        ob.writeData(newNote.id.toString(), newNote);
-    print(getDataHive); */
+    //print(_items);
   }
   //
   //
@@ -65,10 +54,8 @@ class NoteKeeper with ChangeNotifier {
       _items[noteIndex].title = title;
       _items[noteIndex].description = description;
       notifyListeners();
-      /* SQLHelper.update(
-          'keep_note', {'id': id, 'title': title, 'description': description});
-      notifyListeners(); */
-      ob2.updateData(id, title, description);
+      ob.updateNote(id, title, description);
+
       //notifyListeners();
       //print(_items);
     } else {
@@ -101,17 +88,13 @@ class NoteKeeper with ChangeNotifier {
   void deleteOneNote(String id) {
     _items.removeWhere((element) => element.id == id);
     notifyListeners();
-    /* SQLHelper.deleteSingleNote('keep_note', id);
-    notifyListeners(); */
-    ob2.deleteData(id);
+    ob.deleteNote(id);
   }
 
   void deleteAllNotes() {
     _items.clear();
     notifyListeners();
-    /* SQLHelper.deleteTable('keep_note');
-    notifyListeners(); */
-    ob2.deleteAllData();
+    ob.deleteAllNotes();
   }
   //
   //
@@ -121,38 +104,15 @@ class NoteKeeper with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  //
+  //ee
   //
   //
 
-  void fetchAndSetNotes() {
-    List<Notes> fetchItem = ob2.fetchData();
-    _items = fetchItem;
-  }
-
-  /* Future<void> fetchAndSetNotes() async {
-    final getNoteList = await SQLHelper.getData('keep_note');
-    _items = getNoteList
-        .map(
-          (e) => Notes(
-            id: e['id'],
-            title: e['title'],
-            description: e['description'],
-          ),
-        )
-        .toList();
-    //print(_items);
+  fetchAndSetNotes() async {
+    Future<dynamic> fetchItem = ob.fetchNotes();
+    List<Notes> notes = await fetchItem;
+    _items = notes;
     notifyListeners();
-
     //print(_items);
-
-    //var dnmc = ob2.fetchData().cast<Notes>();
-
-    /* List<Notes> fetchItems = fetchNoteList
-        .map((element) => Notes(
-              title: element['title'],
-              description: element['description'],
-            ))
-        .toList(); */
-  } */
+  }
 }
